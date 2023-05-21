@@ -114,11 +114,50 @@ app.post('/posts/add/', (req, res) => {
 
 // Generate excel file
 app.post('/generate', (req, res) => {
+  generateExcelFile()
+  .then(() => {
+    res.send('Excel file created successfully.');
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+});
+
+function excelToJson(workbook){
+  const excelData = [];
+  let excelTitles = [];
+  workbook.worksheets[0].eachRow((row, rowNumber) => {
+      if (rowNumber > 0) {
+          let rowValues = row.values;
+          rowValues.shift();
+          if (rowNumber === 1) 
+            excelTitles = rowValues;
+          else {
+            let rowObject = {}
+            for (let i = 0; i < excelTitles.length; i++) {
+                let title = excelTitles[i];
+                let value = rowValues[i] ? rowValues[i] : '';
+                rowObject[title] = value;
+            }
+            excelData.push(rowObject);
+          }
+      }
+  });
+  return excelData;
+};
+
+async function generateExcelFile() {
   const fileName = 'nalog.xlsx';
+
+  const wbData = new Excel.Workbook();
+  await wbData.xlsx.readFile('data.xlsx');
+  const wsData = wbData.getWorksheet('List1');
+  const excelData = excelToJson(wbData);
 
   const wb = new Excel.Workbook();
   const ws = wb.addWorksheet('My Sheet');
 
+  // Set page properties to A4 size
   ws.pageSetup.paperSize = 9;
   ws.pageSetup.orientation = 'landscape'; 
 
@@ -147,7 +186,12 @@ app.post('/generate', (req, res) => {
   });
 
   ws.mergeCells('A5:C5');
-  ws.getCell('A5').value = 'Predmet: '
+
+  ws.getCell('A5').value = {
+    'richText': [
+      {'text': 'Predmet: '},
+      {'font': {'color': {argb:'FF0000'}},'text': excelData[1].PredmetNaziv + ' ' + excelData[1].PredmetKratica},
+  ]};
 
   const A6 = ws.getCell('A6')
   A6.alignment = {
@@ -266,28 +310,88 @@ app.post('/generate', (req, res) => {
     fgColor:{argb:'E8E8E8'},
   };
 
-  ws.getCell('A13').border = {
-    bottom: {style:'medium', color: {argb:'00000000'}}
+  A13 = ws.getCell('A13')
+  A13.value = {
+    'richText': [
+      {'font': {'color': {argb:'FF0000'}},'text': excelData[1].Katedra},
+  ]};
+  A13.border = {
+    bottom: {style:'medium', color: {argb:'00000000'}},
+    right: {style:'thin', color: {argb:'00000000'}}
   };
-  ws.getCell('C13').border = {
-    bottom: {style:'medium', color: {argb:'00000000'}}
+  A13.alignment = {
+    horizontal: 'center'
   };
-  ws.getCell('D13').border = {
-    bottom: {style:'medium', color: {argb:'00000000'}}
+
+  C13 = ws.getCell('C13')
+  C13.value = {
+    'richText': [
+      {'font': {'color': {argb:'FF0000'}},'text': excelData[1].Studij},
+  ]};
+  C13.border = {
+    bottom: {style:'medium', color: {argb:'00000000'}},
+    right: {style:'thin', color: {argb:'00000000'}}
   };
+
+  D13 = ws.getCell('D13')
+  D13.value = {
+    'richText': [
+      {'font': {'color': {argb:'FF0000'}},'text': excelData[1].SkolskaGodinaNaziv},
+  ]};
+  D13.border = {
+    bottom: {style:'medium', color: {argb:'00000000'}},
+    right: {style:'thin', color: {argb:'00000000'}}
+  };
+
   ws.getCell('E13').border = {
-    bottom: {style:'medium', color: {argb:'00000000'}}
+    bottom: {style:'medium', color: {argb:'00000000'}},
+    right: {style:'thin', color: {argb:'00000000'}}
   };
+  
   ws.getCell('F13').border = {
-    bottom: {style:'medium', color: {argb:'00000000'}}
+    bottom: {style:'medium', color: {argb:'00000000'}},
+    right: {style:'thin', color: {argb:'00000000'}}
   };
   ws.getCell('G13').border = {
-    bottom: {style:'medium', color: {argb:'00000000'}}
-  };
-  ws.getCell('H13').border = {
     bottom: {style:'medium', color: {argb:'00000000'}},
-    right: {style:'medium', color: {argb:'00000000'}}
+    right: {style:'thin', color: {argb:'00000000'}}
   };
+  
+  let P = 0;
+  excelData.forEach(e => {
+    if(e.PlaniraniSatiPredavanja != '')
+    P += parseInt(e.PlaniraniSatiPredavanja)
+  })
+
+  let S = 0;
+  excelData.forEach(e => {
+    if(e.PlaniraniSatiSeminari != '')
+    S += parseInt(e.PlaniraniSatiSeminari)
+  })
+
+  let V = 0;
+  excelData.forEach(e => {
+    if(e.PlaniraniSatiVjezbe != '')
+    V += parseInt(e.PlaniraniSatiVjezbe)
+  })
+
+  H13 = ws.getCell('H13')
+  H13.value = {
+    'richText': [
+      {'text': 'P:'},
+      {'font': {'color': {argb:'FF0000'}}, 'text': parseFloat(P)},
+      {'text': ' S:'},
+      {'font': {'color': {argb:'FF0000'}}, 'text': parseFloat(S)},
+      {'text': ' V:'},
+      {'font': {'color': {argb:'FF0000'}}, 'text': parseFloat(V)},
+  ]};
+  H13.border = {
+    bottom: {style:'medium', color: {argb:'00000000'}},
+    right: {style:'thin', color: {argb:'00000000'}}
+  };
+  H13.alignment = {
+    horizontal: 'center'
+  }
 
   ws.getRow(12).height = 60;
 
@@ -312,7 +416,6 @@ app.post('/generate', (req, res) => {
   ws.mergeCells('N15:N16');
   ws.mergeCells('E15:G15');
   ws.mergeCells('K15:M15');
-  ws.mergeCells('A25:C25');
 
   ws.getCell('E15').value = 'Sati nastave';
   ws.getCell('K15').value = 'Bruto iznos';
@@ -579,208 +682,287 @@ app.post('/generate', (req, res) => {
     fgColor:{argb:'E8E8E8'},
   };
 
-  const A17 = ws.getCell('A17');
-  A17.value = 1;
-  A17.alignment = {
-    horizontal: 'center'
+  let ukupnoPred = 0;
+  let ukupnoSem = 0;
+  let ukupnoVjez = 0;
+  for(i = 0; i < excelData.length; i++) {
+    rowNum = 17 + i;
+    cell0 = ws.getCell('A' + String(rowNum));
+    cell0.value = i + 1;
+    cell0.alignment = {
+      horizontal: 'center',
+      vertical: 'middle'
+    };
+    cell0.border = {
+      bottom: {style:'thin', color: {argb:'00000000'}}
+    };
+
+    cell1 = ws.getCell('B' + String(rowNum));
+    cell1.value = {
+      'richText': [
+        {'font': {'color': {argb:'FF0000'}},'text': excelData[i].NastavnikSuradnikNaziv},
+    ]};
+    cell1.border = {
+      left: {style:'thin', color: {argb:'00000000'}},
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}},
+    };
+    cell1.alignment = {vertical: 'middle'};
+
+    cell2 = ws.getCell('C' + String(rowNum));
+    cell2.value = {
+      'richText': [
+        {'font': {'color': {argb:'FF0000'}},'text': excelData[i].ZvanjeNaziv},
+    ]};
+    cell2.border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}},
+    };
+    cell2.alignment = {
+      wrapText: true,
+      vertical: 'middle'
+    }
+
+    cell3 = ws.getCell('D' + String(rowNum));
+    cell3.value = {
+      'richText': [
+        {'font': {'color': {argb:'FF0000'}},'text': excelData[i].NazivNastavnikStatus},
+    ]};
+    cell3.border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}},
+    };
+    cell3.alignment = {vertical: 'middle'};
+
+    let RealiziraniSatiPredavanja;
+    if (excelData[i].RealiziraniSatiPredavanja === '') 
+      RealiziraniSatiPredavanja = 0
+    else
+      RealiziraniSatiPredavanja = parseInt(excelData[i].RealiziraniSatiPredavanja)
+     
+    cell4 = ws.getCell('E' + String(rowNum));
+    cell4.value = RealiziraniSatiPredavanja;
+    cell4.font = { color: { argb: 'FF0000' } };
+    cell4.border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}},
+    };
+    cell4.alignment = {
+      horizontal: 'center',
+      vertical: 'middle'
+    }
+
+    let RealiziraniSatiSeminari;
+    if (excelData[i].RealiziraniSatiSeminari === '') 
+      RealiziraniSatiSeminari = 0;
+    else
+      RealiziraniSatiSeminari = parseInt(excelData[i].RealiziraniSatiSeminari);
+
+    cell5 = ws.getCell('F' + String(rowNum));
+    cell5.value = RealiziraniSatiSeminari;
+    cell5.font = { color: { argb: 'FF0000' } };
+    cell5.border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}},
+    };
+    cell5.alignment = {
+      horizontal: 'center',
+      vertical: 'middle'
+    }
+
+    let RealiziraniSatiVjezbe;
+    if (excelData[i].RealiziraniSatiVjezbe === '') 
+      RealiziraniSatiVjezbe = 0;
+    else
+      RealiziraniSatiVjezbe = parseInt(excelData[i].RealiziraniSatiVjezbe);
+
+    cell6 = ws.getCell('G' + String(rowNum));
+    cell6.value = RealiziraniSatiVjezbe;
+    cell6.font = { color: { argb: 'FF0000' } };
+    cell6.border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}},
+    };
+    cell6.alignment = {
+      horizontal: 'center',
+      vertical: 'middle'
+    }
+
+    ws.getCell('H' + String(17 + i)).border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}}
+    }
+
+    ws.getCell('I' + String(17 + i)).border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}}
+    }
+
+    ws.getCell('J' + String(17 + i)).border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}}
+    }
+
+    ws.getCell('K' + String(17 + i)).border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}}
+    }
+
+    ws.getCell('L' + String(17 + i)).border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}}
+    }
+
+    ws.getCell('M' + String(17 + i)).border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'thin', color: {argb:'00000000'}}
+    }
+
+    ws.getCell('N' + String(17 + i)).border = {
+      bottom: {style:'thin', color: {argb:'00000000'}},
+      right: {style:'medium', color: {argb:'00000000'}}
+    }
+
+    ukupnoPred += RealiziraniSatiPredavanja;
+    ukupnoSem += RealiziraniSatiSeminari;
+    ukupnoVjez += RealiziraniSatiVjezbe;
   };
 
-  const A18 = ws.getCell('A18');
-  A18.value = 2;
-  A18.alignment = {
-    horizontal: 'center'
-  };
-
-  const A19 = ws.getCell('A19');
-  A19.value = 3;
-  A19.alignment = {
-    horizontal: 'center'
-  };
-
-  const A20 = ws.getCell('A20');
-  A20.value = 4;
-  A20.alignment = {
-    horizontal: 'center'
-  };
-
-  const A21 = ws.getCell('A21');
-  A21.value = 5;
-  A21.alignment = {
-    horizontal: 'center'
-  };
-
-  const A22 = ws.getCell('A22');
-  A22.value = 6;
-  A22.alignment = {
-    horizontal: 'center'
-  };
-
-  const A23 = ws.getCell('A23');
-  A23.value = 7;
-  A23.alignment = {
-    horizontal: 'center'
-  };
-
-  const A24 = ws.getCell('A24');
-  A24.value = 8;
-  A24.alignment = {
-    horizontal: 'center'
-  };
-
-  const A25 = ws.getCell('A25');
-  A25.value = 'UKUPNO';
-  A25.alignment = {
+  mergeFrom = 'A' + String(17 + excelData.length)
+  mergeTo = 'C' + String(17 + excelData.length)
+  ws.mergeCells(mergeFrom + ':' + mergeTo)
+  const ukupno = ws.getCell('A' + String(17 + excelData.length));
+  ukupno.value = 'UKUPNO';
+  ukupno.alignment = {
     horizontal: 'center',
     vertical: 'middle'
   };
-  A25.alignment = {
+  ukupno.alignment = {
     horizontal: 'center',
     vertical: 'middle'
   };
-  A25.border = {
+  ukupno.border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   };
-  A25.font = {
-    bold: true
-  }
+  ukupno.font = {bold: true};
 
-  ws.getCell('D25').border = {
+  ws.getCell('D' + String(17 + excelData.length)).border = {
+    top: {style:'medium', color: {argb:'00000000'}},
+    left: {style:'medium', color: {argb:'00000000'}},
+    bottom: {style:'medium', color: {argb:'00000000'}},
+    right: {style:'medium', color: {argb:'00000000'}}
+  };
+
+  const cellUkupnoPred = ws.getCell('E' + String(17 + excelData.length))
+  cellUkupnoPred.value = ukupnoPred;
+  cellUkupnoPred.font = {bold: true, color: { argb: 'FF0000'}};
+  cellUkupnoPred.alignment = {horizontal: 'center'};
+  cellUkupnoPred.border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('E25').border = {
+  const cellUkupnoSem = ws.getCell('F' + String(17 + excelData.length))
+  cellUkupnoSem.value = ukupnoSem;
+  cellUkupnoSem.font = {bold: true, color: { argb: 'FF0000'}};
+  cellUkupnoSem.alignment = {horizontal: 'center'};
+  cellUkupnoSem.border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('F25').border = {
+  const cellUkupnoVjez = ws.getCell('G' + String(17 + excelData.length))
+  cellUkupnoVjez.value = ukupnoVjez;
+  cellUkupnoVjez.font = {bold: true, color: { argb: 'FF0000'}};
+  cellUkupnoVjez.alignment = {horizontal: 'center'};
+  cellUkupnoVjez.border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('G25').border = {
+  ws.getCell('H' + String(17 + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('H25').border = {
+  ws.getCell('I' + String(17 + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('I25').border = {
+  ws.getCell('J' + String(17 + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('J25').border = {
+  ws.getCell('K' + String(17 + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('K25').border = {
+  ws.getCell('L' + String(17 + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('L25').border = {
+  ws.getCell('M' + String(17 + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('M25').border = {
+  ws.getCell('N' + String(17 + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('N25').border = {
-    top: {style:'medium', color: {argb:'00000000'}},
-    left: {style:'medium', color: {argb:'00000000'}},
-    bottom: {style:'medium', color: {argb:'00000000'}},
-    right: {style:'medium', color: {argb:'00000000'}}
-  }
+  ws.mergeCells('A' + String(20 + excelData.length) + ':C' + String(21 + excelData.length));
+  ws.mergeCells('A' + String(26 + excelData.length) + ':C' + String(27 + excelData.length));
+  ws.mergeCells('J' + String(26 + excelData.length) + ':L' + String(27 + excelData.length));
 
-  ws.getCell('N17').border = {
-    right: {style:'medium', color: {argb:'00000000'}}
-  }
-  ws.getCell('N18').border = {
-    right: {style:'medium', color: {argb:'00000000'}}
-  }
-  ws.getCell('N19').border = {
-    right: {style:'medium', color: {argb:'00000000'}}
-  }
-  ws.getCell('N20').border = {
-    right: {style:'medium', color: {argb:'00000000'}}
-  }
-  ws.getCell('N21').border = {
-    right: {style:'medium', color: {argb:'00000000'}}
-  }
-  ws.getCell('N22').border = {
-    right: {style:'medium', color: {argb:'00000000'}}
-  }
-  ws.getCell('N23').border = {
-    right: {style:'medium', color: {argb:'00000000'}}
-  }
-  ws.getCell('N24').border = {
-    right: {style:'medium', color: {argb:'00000000'}}
-  }
+  const prodekanicaZaNastavu = ws.getCell('A' + String(20 + excelData.length));
+  prodekanicaZaNastavu.value = 'Prodekanica za nastavu i studentska pitanja\nProf. dr. sc.';
+  prodekanicaZaNastavu.alignment = {wrapText: true};
 
+  const prodekanZaFinancije = ws.getCell('A' + String(26 + excelData.length));
+  prodekanZaFinancije.value = 'Prodekan za financije i upravljanje\nProf. dr. sc.';
+  prodekanZaFinancije.alignment = {wrapText: true};
 
-  ws.mergeCells('A28:C29');
-  ws.mergeCells('A34:C35');
-  ws.mergeCells('J34:L35');
-
-  const A28 = ws.getCell('A28')
-  A28.value = 'Prodekanica za nastavu i studentska pitanja\nProf. dr. sc.'
-  A28.alignment = {
-    wrapText: true
-  }
-
-  const A34 = ws.getCell('A34')
-  A34.value = 'Prodekan za financije i upravljanje\nProf. dr. sc.'
-  A34.alignment = {
-    wrapText: true
-  }
-
-  const J34 = ws.getCell('J34')
-  J34.value = 'Dekan\nProf. dr. sc.'
-  J34.alignment = {
-    wrapText: true
-  }
+  const dekan = ws.getCell('J' + String(26 + excelData.length));
+  dekan.value = 'Dekan\nProf. dr. sc.';
+  dekan.alignment = {wrapText: true};
 
   wb.xlsx
     .writeFile(fileName)
     .then(() => {
-      console.log('Excel file created');
+      console.log('file created');
     })
     .catch(err => {
-      console.log('Error generating Excel file');
+      console.log(err.message);
     });
-});
+};
 
 app.listen(4000, () => {
     console.log("listening to port 4000");
