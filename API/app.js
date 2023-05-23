@@ -157,7 +157,6 @@ async function generateExcelFile() {
   const wb = new Excel.Workbook();
   const ws = wb.addWorksheet('My Sheet');
 
-  // Set page properties to A4 size
   ws.pageSetup.paperSize = 9;
   ws.pageSetup.orientation = 'landscape'; 
 
@@ -187,11 +186,7 @@ async function generateExcelFile() {
 
   ws.mergeCells('A5:C5');
 
-  ws.getCell('A5').value = {
-    'richText': [
-      {'text': 'Predmet: '},
-      {'font': {'color': {argb:'FF0000'}},'text': excelData[1].PredmetNaziv + ' ' + excelData[1].PredmetKratica},
-  ]};
+  ws.getCell('A5').value = 'Predmet: ' + excelData[0].PredmetNaziv + ' ' + excelData[0].PredmetKratica;
 
   const A6 = ws.getCell('A6')
   A6.alignment = {
@@ -311,10 +306,7 @@ async function generateExcelFile() {
   };
 
   A13 = ws.getCell('A13')
-  A13.value = {
-    'richText': [
-      {'font': {'color': {argb:'FF0000'}},'text': excelData[1].Katedra},
-  ]};
+  A13.value = excelData[1].Katedra;
   A13.border = {
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'thin', color: {argb:'00000000'}}
@@ -324,23 +316,17 @@ async function generateExcelFile() {
   };
 
   C13 = ws.getCell('C13')
-  C13.value = {
-    'richText': [
-      {'font': {'color': {argb:'FF0000'}},'text': excelData[1].Studij},
-  ]};
+  C13.value = excelData[1].Studij;
   C13.border = {
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'thin', color: {argb:'00000000'}}
   };
 
   D13 = ws.getCell('D13')
-  D13.value = {
-    'richText': [
-      {'font': {'color': {argb:'FF0000'}},'text': excelData[1].SkolskaGodinaNaziv},
-  ]};
+  D13.value = excelData[1].SkolskaGodinaNaziv;
   D13.border = {
     bottom: {style:'medium', color: {argb:'00000000'}},
-    right: {style:'thin', color: {argb:'00000000'}}
+    right: {style:'medium', color: {argb:'00000000'}}
   };
 
   ws.getCell('E13').border = {
@@ -376,29 +362,19 @@ async function generateExcelFile() {
   })
 
   H13 = ws.getCell('H13')
-  H13.value = {
-    'richText': [
-      {'text': 'P:'},
-      {'font': {'color': {argb:'FF0000'}}, 'text': parseFloat(P)},
-      {'text': ' S:'},
-      {'font': {'color': {argb:'FF0000'}}, 'text': parseFloat(S)},
-      {'text': ' V:'},
-      {'font': {'color': {argb:'FF0000'}}, 'text': parseFloat(V)},
-  ]};
+  H13.value = 'P: ' + parseFloat(P) + ' S: ' +  parseFloat(S) + ' V: ' +  parseFloat(V);
   H13.border = {
     bottom: {style:'medium', color: {argb:'00000000'}},
-    right: {style:'thin', color: {argb:'00000000'}}
+    right: {style:'medium', color: {argb:'00000000'}}
   };
   H13.alignment = {
     horizontal: 'center'
   }
 
   ws.getRow(12).height = 60;
-
   ws.getRow(12).font = {
     bold: true,
   }
-
   ws.getRow(12).alignment = {
     vertical: 'middle', 
     horizontal: 'center',
@@ -454,7 +430,6 @@ async function generateExcelFile() {
   }
 
   ws.getRow(16).height = 90;
-
   ws.getRow(16).font = {
     bold: true,
   }
@@ -682,9 +657,6 @@ async function generateExcelFile() {
     fgColor:{argb:'E8E8E8'},
   };
 
-  let ukupnoPred = 0;
-  let ukupnoSem = 0;
-  let ukupnoVjez = 0;
   for(i = 0; i < excelData.length; i++) {
     rowNum = 17 + i;
     cell0 = ws.getCell('A' + String(rowNum));
@@ -698,10 +670,7 @@ async function generateExcelFile() {
     };
 
     cell1 = ws.getCell('B' + String(rowNum));
-    cell1.value = {
-      'richText': [
-        {'font': {'color': {argb:'FF0000'}},'text': excelData[i].NastavnikSuradnikNaziv},
-    ]};
+    cell1.value = excelData[i].NastavnikSuradnikNaziv;
     cell1.border = {
       left: {style:'thin', color: {argb:'00000000'}},
       bottom: {style:'thin', color: {argb:'00000000'}},
@@ -710,10 +679,7 @@ async function generateExcelFile() {
     cell1.alignment = {vertical: 'middle'};
 
     cell2 = ws.getCell('C' + String(rowNum));
-    cell2.value = {
-      'richText': [
-        {'font': {'color': {argb:'FF0000'}},'text': excelData[i].ZvanjeNaziv},
-    ]};
+    cell2.value = excelData[i].ZvanjeNaziv;
     cell2.border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}},
@@ -724,10 +690,7 @@ async function generateExcelFile() {
     }
 
     cell3 = ws.getCell('D' + String(rowNum));
-    cell3.value = {
-      'richText': [
-        {'font': {'color': {argb:'FF0000'}},'text': excelData[i].NazivNastavnikStatus},
-    ]};
+    cell3.value = excelData[i].NazivNastavnikStatus;
     cell3.border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}},
@@ -742,7 +705,6 @@ async function generateExcelFile() {
      
     cell4 = ws.getCell('E' + String(rowNum));
     cell4.value = RealiziraniSatiPredavanja;
-    cell4.font = { color: { argb: 'FF0000' } };
     cell4.border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}},
@@ -760,7 +722,6 @@ async function generateExcelFile() {
 
     cell5 = ws.getCell('F' + String(rowNum));
     cell5.value = RealiziraniSatiSeminari;
-    cell5.font = { color: { argb: 'FF0000' } };
     cell5.border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}},
@@ -778,7 +739,6 @@ async function generateExcelFile() {
 
     cell6 = ws.getCell('G' + String(rowNum));
     cell6.value = RealiziraniSatiVjezbe;
-    cell6.font = { color: { argb: 'FF0000' } };
     cell6.border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}},
@@ -788,48 +748,69 @@ async function generateExcelFile() {
       vertical: 'middle'
     }
 
-    ws.getCell('H' + String(17 + i)).border = {
+    start = 17;
+    ws.getCell('H' + String(start + i)).border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}}
     }
 
-    ws.getCell('I' + String(17 + i)).border = {
+    ws.getCell('I' + String(start + i)).border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}}
     }
 
-    ws.getCell('J' + String(17 + i)).border = {
+    ws.getCell('J' + String(start + i)).border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}}
     }
 
-    ws.getCell('K' + String(17 + i)).border = {
+    cell7 = ws.getCell('K' + String(start + i));
+    cell7.value = { formula: 'E' +  String(start + i) + '*H' + String(start + i)};
+    cell7.alignment = {
+      horizontal: 'right',
+      vertical: 'middle'
+    }
+    cell7.border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}}
     }
 
-    ws.getCell('L' + String(17 + i)).border = {
+    cell8 = ws.getCell('L' + String(start + i));
+    cell8.value = { formula: 'F' +  String(start + i) + '*I' + String(start + i)};
+    cell8.alignment = {
+      horizontal: 'right',
+      vertical: 'middle'
+    }
+    cell8.border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}}
     }
 
-    ws.getCell('M' + String(17 + i)).border = {
+    cell9 = ws.getCell('M' + String(start + i));
+    cell9.value = { formula: 'G' +  String(start + i) + '*J' + String(start + i)};
+    cell9.alignment = {
+      horizontal: 'right',
+      vertical: 'middle'
+    }
+    cell9.border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'thin', color: {argb:'00000000'}}
     }
 
-    ws.getCell('N' + String(17 + i)).border = {
+    cell10 = ws.getCell('N' + String(start + i));
+    cell10.value = { formula: 'K' +  String(start + i) + '*M' + String(start + i)};
+    cell10.alignment = {
+      horizontal: 'right',
+      vertical: 'middle'
+    }
+    cell10.border = {
       bottom: {style:'thin', color: {argb:'00000000'}},
       right: {style:'medium', color: {argb:'00000000'}}
     }
-
-    ukupnoPred += RealiziraniSatiPredavanja;
-    ukupnoSem += RealiziraniSatiSeminari;
-    ukupnoVjez += RealiziraniSatiVjezbe;
   };
 
-  mergeFrom = 'A' + String(17 + excelData.length)
-  mergeTo = 'C' + String(17 + excelData.length)
+  mergeFrom = 'A' + String(start + excelData.length)
+  mergeTo = 'C' + String(start + excelData.length)
   ws.mergeCells(mergeFrom + ':' + mergeTo)
   const ukupno = ws.getCell('A' + String(17 + excelData.length));
   ukupno.value = 'UKUPNO';
@@ -849,16 +830,16 @@ async function generateExcelFile() {
   };
   ukupno.font = {bold: true};
 
-  ws.getCell('D' + String(17 + excelData.length)).border = {
+  ws.getCell('D' + String(start + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   };
 
-  const cellUkupnoPred = ws.getCell('E' + String(17 + excelData.length))
-  cellUkupnoPred.value = ukupnoPred;
-  cellUkupnoPred.font = {bold: true, color: { argb: 'FF0000'}};
+  const cellUkupnoPred = ws.getCell('E' + String(start + excelData.length))
+  cellUkupnoPred.value = { formula: 'SUM(E' + String(start) + ':E' + String(start + excelData.length - 1 + ')')};
+  cellUkupnoPred.font = {bold: true};
   cellUkupnoPred.alignment = {horizontal: 'center'};
   cellUkupnoPred.border = {
     top: {style:'medium', color: {argb:'00000000'}},
@@ -867,9 +848,9 @@ async function generateExcelFile() {
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  const cellUkupnoSem = ws.getCell('F' + String(17 + excelData.length))
-  cellUkupnoSem.value = ukupnoSem;
-  cellUkupnoSem.font = {bold: true, color: { argb: 'FF0000'}};
+  const cellUkupnoSem = ws.getCell('F' + String(start + excelData.length))
+  cellUkupnoSem.value = { formula: 'SUM(F' + String(start) + ':F' + String(start + excelData.length - 1 + ')')};
+  cellUkupnoSem.font = {bold: true};
   cellUkupnoSem.alignment = {horizontal: 'center'};
   cellUkupnoSem.border = {
     top: {style:'medium', color: {argb:'00000000'}},
@@ -878,9 +859,9 @@ async function generateExcelFile() {
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  const cellUkupnoVjez = ws.getCell('G' + String(17 + excelData.length))
-  cellUkupnoVjez.value = ukupnoVjez;
-  cellUkupnoVjez.font = {bold: true, color: { argb: 'FF0000'}};
+  const cellUkupnoVjez = ws.getCell('G' + String(start + excelData.length))
+  cellUkupnoVjez.value = { formula: 'SUM(G' + String(start) + ':G' + String(start + excelData.length - 1 + ')')};
+  cellUkupnoVjez.font = {bold: true};
   cellUkupnoVjez.alignment = {horizontal: 'center'};
   cellUkupnoVjez.border = {
     top: {style:'medium', color: {argb:'00000000'}},
@@ -889,49 +870,61 @@ async function generateExcelFile() {
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('H' + String(17 + excelData.length)).border = {
+  ws.getCell('H' + String(start + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('I' + String(17 + excelData.length)).border = {
+  ws.getCell('I' + String(start + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('J' + String(17 + excelData.length)).border = {
+  ws.getCell('J' + String(start + excelData.length)).border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('K' + String(17 + excelData.length)).border = {
+  const cellUkupnoBrutoPred = ws.getCell('K' + String(start + excelData.length))
+  cellUkupnoBrutoPred.value = { formula: 'SUM(K' + String(start) + ':K' + String(start + excelData.length - 1 + ')')};
+  cellUkupnoBrutoPred.alignment = {horizontal: 'right'};
+  cellUkupnoBrutoPred.border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('L' + String(17 + excelData.length)).border = {
+  const cellUkupnoBrutoSem = ws.getCell('L' + String(start + excelData.length))
+  cellUkupnoBrutoSem.value = { formula: 'SUM(L' + String(start) + ':L' + String(start + excelData.length - 1 + ')')};
+  cellUkupnoBrutoSem.alignment = {horizontal: 'right'};
+  cellUkupnoBrutoSem.border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('M' + String(17 + excelData.length)).border = {
+  const cellUkupnoBrutoVjez = ws.getCell('M' + String(start + excelData.length))
+  cellUkupnoBrutoVjez.value = { formula: 'SUM(M' + String(start) + ':M' + String(start + excelData.length - 1 + ')')};
+  cellUkupnoBrutoVjez.alignment = {horizontal: 'right'};
+  cellUkupnoBrutoVjez.border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
     right: {style:'medium', color: {argb:'00000000'}}
   }
 
-  ws.getCell('N' + String(17 + excelData.length)).border = {
+  const ukupnoZaIsplatu = ws.getCell('N' + String(start + excelData.length))
+  ukupnoZaIsplatu.value = { formula: 'SUM(N' + String(start) + ':N' + String(start + excelData.length - 1 + ')')};
+  ukupnoZaIsplatu.alignment = {horizontal: 'right'};
+  ukupnoZaIsplatu.border = {
     top: {style:'medium', color: {argb:'00000000'}},
     left: {style:'medium', color: {argb:'00000000'}},
     bottom: {style:'medium', color: {argb:'00000000'}},
@@ -962,7 +955,7 @@ async function generateExcelFile() {
     .catch(err => {
       console.log(err.message);
     });
-};
+}
 
 app.listen(4000, () => {
     console.log("listening to port 4000");
